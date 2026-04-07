@@ -501,9 +501,9 @@ ${ROOMS[room].prompt}
 {"findings":[{"id":1,"severity":"critical|warning|ok","category":"קטגוריה","title":"כותרת","description":"תיאור","action":"פעולה"}]}
 critical=הפרה ברורה, warning=בעיה, ok=תקין. 4-7 ממצאים.`;
   try{
-    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    const resp=await fetch("https://lanthropic-proxy.gabiiungelson.workers.dev",{
       method:"POST",
-      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
       body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:1000,system:sys,
         messages:[{role:"user",content:[
           {type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}},
