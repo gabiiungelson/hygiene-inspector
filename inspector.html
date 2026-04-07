@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0b1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="מפקח תברואה">
+<title>מפקח תברואה חכם</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0b1120;--s1:#111d30;--s2:#162240;--border:#1e3a5f;
+  --accent:#00d4ff;--accent2:#0062ff;
+  --red:#ff4757;--yellow:#ffd32a;--green:#2ed573;
+  --text:#e2eeff;--muted:#5f88b0;--soft:#8ab2d4;
+  --wa:#25D366;--wa2:#128C7E;
+}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+.hdr{width:100%;background:linear-gradient(135deg,#0b1120,#0e1928);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;}
+.hdr-ico{width:42px;height:42px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 18px rgba(0,210,255,.3);}
+.hdr h1{font-size:16px;font-weight:900;}
+.hdr p{font-size:11px;color:var(--muted);}
+
+.main{width:100%;max-width:540px;padding:18px 14px 60px;}
+.step-lbl{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+
+/* API KEY BANNER */
+.api-banner{background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.3);border-radius:14px;padding:13px 16px;margin-bottom:16px;display:none;}
+.api-banner.show{display:flex;align-items:center;gap:12px;}
+.api-banner .ico{font-size:22px;flex-shrink:0;}
+.api-banner .txt{flex:1;}
+.api-banner strong{font-size:13px;color:var(--text);display:block;margin-bottom:3px;}
+.api-banner p{font-size:11px;color:var(--soft);line-height:1.5;}
+.api-input-wrap{margin-top:10px;display:flex;gap:8px;}
+.api-input-wrap input{flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'Heebo',sans-serif;outline:none;direction:ltr;}
+.api-input-wrap input:focus{border-color:var(--accent);}
+.btn-api-save{background:var(--accent2);border:none;color:#fff;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;}
+
+/* WA BANNER */
+.wa-setup{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.25);border-radius:14px;padding:13px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.wa-ico{font-size:24px;flex-shrink:0;}
+.wa-txt{flex:1;}
+.wa-txt strong{font-size:13px;color:var(--text);}
+.wa-txt p{font-size:11px;color:var(--soft);margin-top:2px;}
+.btn-wa-set{background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.35);color:var(--wa);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;transition:all .18s;}
+.btn-wa-set:hover{background:rgba(37,211,102,.25);}
+
+/* WA MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:#111d30;border:1px solid var(--border);border-radius:18px;padding:24px 20px;width:100%;max-width:360px;}
+.modal h2{font-size:16px;font-weight:800;margin-bottom:6px;}
+.modal p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.modal label{font-size:12px;font-weight:700;color:var(--soft);display:block;margin-bottom:6px;}
+.modal input{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;color:var(--text);font-family:'Heebo',sans-serif;margin-bottom:14px;outline:none;direction:ltr;}
+.modal input:focus{border-color:var(--accent);}
+.modal-btns{display:flex;gap:10px;}
+.btn-save{flex:1;background:linear-gradient(135deg,var(--wa2),var(--wa));color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;}
+.btn-cancel{flex:1;background:var(--s2);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;}
+.modal-tip{font-size:11px;color:var(--muted);margin-top:12px;background:var(--s2);border-radius:8px;padding:10px 12px;line-height:1.6;}
+
+/* ROOMS */
+.rooms{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.room-btn{background:var(--s1);border:2px solid var(--border);border-radius:16px;padding:16px 8px 13px;cursor:pointer;text-align:center;transition:all .18s;-webkit-tap-highlight-color:transparent;}
+.room-btn:hover{border-color:var(--accent);background:var(--s2);}
+.room-btn:active{transform:scale(.95);}
+.room-emoji{font-size:30px;display:block;margin-bottom:7px;}
+.room-name{font-size:12px;font-weight:800;line-height:1.25;}
+.room-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+
+#fileInput{display:none;}
+
+.selected-room-bar{display:none;background:rgba(0,210,255,.07);border:1px solid rgba(0,210,255,.25);border-radius:12px;padding:10px 16px;margin-bottom:14px;align-items:center;justify-content:space-between;}
+.selected-room-bar span{font-size:13px;font-weight:700;}
+.btn-change-room{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;text-decoration:underline;}
+
+/* QUIZ */
+.quiz-section{display:none;background:var(--s1);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;}
+.quiz-top{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.quiz-top h3{font-size:13px;font-weight:700;}
+.btn-quiz{background:rgba(0,210,255,.08);border:1px solid rgba(0,210,255,.25);color:var(--accent);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;transition:all .18s;}
+.btn-quiz:hover{background:rgba(0,210,255,.15);}
+.quiz-body{padding:12px 16px;}
+.q-item{background:var(--s2);border-radius:10px;padding:10px 13px;margin-bottom:7px;border-right:3px solid var(--accent2);animation:fadeUp .3s ease both;}
+.q-num{font-size:10px;font-weight:700;color:var(--accent);margin-bottom:3px;}
+.q-text{font-size:13px;font-weight:600;line-height:1.5;}
+.quiz-note{font-size:11px;color:var(--muted);text-align:center;margin-top:5px;}
+
+/* PREVIEW */
+.prev{display:none;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);margin-bottom:12px;}
+.prev img{width:100%;max-height:280px;object-fit:cover;display:block;}
+.prev-bar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(11,17,32,.95),transparent);padding:14px 14px 11px;display:flex;align-items:center;justify-content:space-between;}
+.prev-bar span{font-size:12px;color:var(--soft);}
+.btn-recam{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;}
+
+.btn-analyze{width:100%;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;box-shadow:0 4px 22px rgba(0,98,255,.4);transition:all .2s;display:none;}
+.btn-analyze:hover{transform:translateY(-1px);}
+.btn-analyze:disabled{opacity:.65;cursor:not-allowed;transform:none;}
+
+/* LOADER */
+.loader{display:none;text-align:center;padding:28px 0;}
+.loader-ring{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 11px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader p{font-size:13px;color:var(--muted);}
+.dots{display:inline-flex;gap:4px;margin-top:5px;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:dot 1.2s ease-in-out infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dot{0%,80%,100%{opacity:.2;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* RESULTS */
+.results{display:none;margin-top:4px;}
+.res-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.res-title{font-size:16px;font-weight:900;}
+.badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.badge-red{background:rgba(255,71,87,.15);color:var(--red);border:1px solid rgba(255,71,87,.3);}
+.badge-yellow{background:rgba(255,211,42,.12);color:var(--yellow);border:1px solid rgba(255,211,42,.28);}
+.badge-green{background:rgba(46,213,115,.12);color:var(--green);border:1px solid rgba(46,213,115,.28);}
+.sumbar{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:13px;display:flex;margin-bottom:13px;}
+.sum-item{flex:1;text-align:center;}
+.sum-num{font-size:24px;font-weight:900;line-height:1;}
+.sum-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+.sum-div{width:1px;background:var(--border);}
+.nc{color:var(--red);}
+.nw{color:var(--yellow);}
+.nok{color:var(--green);}
+.finding{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:12px 13px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;animation:fadeUp .32s ease both;border-right:3px solid transparent;}
+.finding.critical{border-right-color:var(--red);}
+.finding.warning{border-right-color:var(--yellow);}
+.finding.ok{border-right-color:var(--green);}
+.f-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.critical .f-ico{background:rgba(255,71,87,.1);}
+.warning .f-ico{background:rgba(255,211,42,.08);}
+.ok .f-ico{background:rgba(46,213,115,.08);}
+.f-body{flex:1;}
+.f-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;}
+.f-cat{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+.sev-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:9px;}
+.critical .sev-tag{background:rgba(255,71,87,.13);color:var(--red);}
+.warning .sev-tag{background:rgba(255,211,42,.1);color:var(--yellow);}
+.ok .sev-tag{background:rgba(46,213,115,.1);color:var(--green);}
+.f-title{font-size:13px;font-weight:700;line-height:1.3;}
+.f-desc{font-size:12px;color:var(--soft);line-height:1.5;margin-top:2px;}
+.f-action{font-size:11px;color:var(--accent);font-weight:600;margin-top:4px;}
+.action-btns{display:flex;gap:10px;margin-top:10px;}
+.btn-pdf{flex:1;background:var(--s1);border:1.5px solid var(--border);color:var(--text);border-radius:13px;padding:12px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;}
+.btn-pdf:hover{border-color:var(--accent);color:var(--accent);}
+.btn-wa{flex:1;background:linear-gradient(135deg,var(--wa2),var(--wa));border:none;color:#fff;border-radius:13px;padding:12px 8px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;box-shadow:0 4px 16px rgba(37,211,102,.35);}
+.btn-wa:hover{transform:translateY(-1px);}
+.btn-reset{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:13px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;font-family:'Heebo',sans-serif;transition:all .2s;}
+.btn-reset:hover{border-color:var(--soft);color:var(--text);}
+.err-box{display:none;background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.25);border-radius:13px;padding:12px;font-size:12px;color:var(--red);text-align:center;margin-top:12px;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2a1a;border:1px solid var(--wa);color:#fff;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- WA Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>📱 הגדרת WhatsApp</h2>
+    <p>הכנס מספר טלפון לשליחת דוחות. הדוח יישמר ו-WhatsApp ייפתח מוכן לשליחה.</p>
+    <label>מספר טלפון (עם קוד מדינה)</label>
+    <input type="tel" id="waInput" placeholder="972501234567" maxlength="20">
+    <div class="modal-tip">💡 לקבוצה: פתח קבוצה ← שלוש נקודות ← מידע ← הזמן דרך קישור ← העתק את המספר מהקישור.</div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn-save" onclick="saveWA()">✓ שמור</button>
+      <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="hdr">
+  <div class="hdr-ico">🔍</div>
+  <div>
+    <h1>מפקח תברואה חכם</h1>
+    <p>בחר חדר ← מצלמה ← AI ← דוח + WhatsApp</p>
+  </div>
+</div>
+
+<div class="main">
+  <input type="file" id="fileInput" accept="image/*" capture="environment">
+
+  <!-- API KEY BANNER -->
+  <div class="api-banner show" id="apiBanner">
+    <div class="ico">🔑</div>
+    <div class="txt">
+      <strong>נדרש מפתח API</strong>
+      <p>הכנס את מפתח ה-API שלך מ-Anthropic כדי להפעיל את הניתוח. המפתח נשמר במכשיר בלבד.</p>
+      <div class="api-input-wrap">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+        <button class="btn-api-save" onclick="saveApiKey()">שמור</button>
+      </div>
+      <p style="margin-top:6px;font-size:10px;">קבל מפתח בחינם בכתובת: <strong>console.anthropic.com</strong></p>
+    </div>
+  </div>
+
+  <!-- WA Banner -->
+  <div class="wa-setup">
+    <div class="wa-ico">💬</div>
+    <div class="wa-txt">
+      <strong id="waBannerText">הגדר WhatsApp לשליחת דוחות</strong>
+      <p id="waBannerSub">לאחר ביקורת — הדוח יישמר ו-WhatsApp ייפתח</p>
+    </div>
+    <button class="btn-wa-set" onclick="openModal()">⚙️ הגדר</button>
+  </div>
+
+  <!-- Room Section -->
+  <div id="roomSection">
+    <div class="step-lbl">בחר חדר — המצלמה תיפתח מיד</div>
+    <div class="rooms" id="roomGrid"></div>
+  </div>
+
+  <div id="selectedBar" class="selected-room-bar">
+    <span id="selectedLabel"></span>
+    <button class="btn-change-room" onclick="changeRoom()">שנה חדר</button>
+  </div>
+
+  <div class="quiz-section" id="quizSection">
+    <div class="quiz-top">
+      <h3>🎯 שאלות תברואה לעובדים</h3>
+      <button class="btn-quiz" onclick="generateQuiz()">🔀 3 שאלות חדשות</button>
+    </div>
+    <div class="quiz-body" id="quizBody">
+      <p style="font-size:13px;color:var(--muted);text-align:center;">לחץ לקבלת שאלות</p>
+    </div>
+  </div>
+
+  <div class="prev" id="prevWrap">
+    <img id="prevImg" src="" alt="">
+    <div class="prev-bar">
+      <span id="imgLabel">תמונה נבחרה</span>
+      <button class="btn-recam" onclick="openCamera()">📷 צלם שוב</button>
+    </div>
+  </div>
+
+  <button class="btn-analyze" id="btnAnalyze" onclick="analyzeImage()">🔬 בצע ביקורת תברואה</button>
+
+  <div class="loader" id="loader">
+    <div class="loader-ring"></div>
+    <p>מנתח לפי תקן <span id="roomLoader"></span>...</p>
+    <div class="dots"><span></span><span></span><span></span></div>
+  </div>
+  <div class="err-box" id="errBox"></div>
+
+  <div class="results" id="results">
+    <div class="res-hdr">
+      <div class="res-title">ממצאי הביקורת</div>
+      <div id="overallBadge"></div>
+    </div>
+    <div class="sumbar" id="sumBar"></div>
+    <div id="findingsList"></div>
+    <div class="action-btns">
+      <button class="btn-pdf" onclick="exportPDF()">📄 שמור PDF</button>
+      <button class="btn-wa" onclick="sendWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        שלח WhatsApp
+      </button>
+    </div>
+    <button class="btn-reset" onclick="resetAll()">🔄 ביקורת חדשה</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let room=null, roomName='', roomEmoji='';
+let imageBase64=null, lastFindings=[];
+let waNumber = localStorage.getItem('wa_number')||'';
+let apiKey = localStorage.getItem('anthropic_api_key')||'';
+
+// ── CHECK API KEY ON LOAD ──
+function checkApiKey(){
+  if(apiKey){
+    document.getElementById('apiBanner').classList.remove('show');
+  } else {
+    document.getElementById('apiBanner').classList.add('show');
+  }
+}
+checkApiKey();
+
+function saveApiKey(){
+  const v = document.getElementById('apiKeyInput').value.trim();
+  if(!v || !v.startsWith('sk-ant')){showToast('⚠️ מפתח לא תקין — חייב להתחיל ב-sk-ant');return;}
+  apiKey = v;
+  localStorage.setItem('anthropic_api_key', v);
+  document.getElementById('apiBanner').classList.remove('show');
+  showToast('✅ מפתח API נשמר!');
+}
+
+// ── ALL ROOMS ──
+const ROOMS={
+  kitchen:{name:'חדר בישול ראשי',emoji:'👨‍🍳',prompt:`בדוק את חדר הבישול הראשי לפי תקני משרד הבריאות:
+1. כיסוי מזון — כל המאכלים מכוסים כראוי, אין מזון חשוף
+2. ניקיון מכשירים — תנורים, גריל, מיקסרים, סירים
+3. ניקיון שולחנות עבודה — משטחי נירוסטה, לוחות חיתוך
+4. היגיינה אישית — כיסוי ראש, סינר, כפפות, ביגוד
+5. הפרדת מזון חי/מבושל — לא מאוחסנים יחד
+6. ניקיון ריצפה ותעלות ניקוז
+7. גישה לכיור ידיים וסבון
+8. ניהול פסולת — פחי אשפה מכוסים`},
+  toilets:{name:'שירותים ומלתחות',emoji:'🚿',prompt:`בדוק את שירותי העובדים והמלתחות:
+1. ניקיון שירותים — אסלות, כיורים, רצפה, קירות
+2. זמינות סבון וניירות — מתקן מלא, ניירות/מגבות זמינות
+3. ניקיון מקלחות — עובש, לכלוך, ניקוז תקין
+4. סדר מלתחות — לוקרים, ביגוד אישי, בלגן
+5. הפרדת ביגוד עבודה מבגדים אישיים
+6. ניקיון רצפה — שלוליות, לכלוך
+7. אוורור מתאים — ריח, לחות
+8. שלט חובה לשטוף ידיים — גלוי וקריא`},
+  salads:{name:'חדר עיבוד סלטים',emoji:'🥗',prompt:`בדוק את חדר עיבוד הסלטים:
+1. ניקיון ירקות — שטיפה מספקת, הפרדת ירקות מלוכלכים
+2. הפרדת חומרי גלם ומוצר מוכן
+3. ניקיון משטחי עבודה — שיירי מזון, לחות
+4. היגיינה אישית — כיסוי ראש, כפפות, ביגוד נקי
+5. ניהול אלרגנים — הפרדת מרכיבים אלרגניים
+6. שמירת קור — סלטים מוכנים בקירור עד 4°C
+7. ניקיון ציוד — מעבדי מזון, סכינים, קולפנים
+8. תיוג וכיסוי — כל מוצר מתויג עם תאריך ייצור`},
+  pastry:{name:'חדר קונדיטוריה',emoji:'🍰',prompt:`בדוק את חדר הקונדיטוריה:
+1. הפרדת אלרגנים — גלוטן, אגוזים, ביצים, חלב
+2. ניקיון משטחי עבודה — שיירי קמח, סוכר, שומן
+3. ניקיון ציוד — מיקסרים, תבניות, גלגלני בצק
+4. כיסוי מוצרים — עוגות ומאפים לא חשופים
+5. טמפרטורת אחסון — קרם, שמנת, ביצים בקירור עד 4°C
+6. היגיינה אישית — כיסוי ראש, כפפות, ביגוד לבן
+7. ניקיון תנורים — שיירי בצק, שריפות, שומן
+8. ניהול קמח — שקים סגורים, לא על הרצפה`},
+  warehouse:{name:'מחסן סחורות',emoji:'📦',prompt:`בדוק את המחסן:
+1. סחורה על הרצפה — גובה מינימום 15 ס"מ
+2. סדר במדפים — מוצרים ממוינים, תוויות קדימה
+3. אריזות פתוחות — חשיפת מוצרים
+4. ניקיון מדפים — אבק, שאריות
+5. ניקיון ריצפה — לכלוך, שמן, מזיקים
+6. הפרדה נכונה יבש/קפוא/קירור
+7. תאריכי תפוגה גלויים`},
+  butcher:{name:'חדר קצביה',emoji:'🥩',prompt:`בדוק את חדר הקצביה:
+1. הפרדה מוחלטת עוף/דגים/בקר — כלים נפרדים
+2. ניקיון משטחי עבודה ולוחות חיתוך
+3. טמפרטורת מקרר 0-4°C
+4. סדר מקררים
+5. ניקיון כלים — סכינים, מסורים
+6. ביגוד עובדים — כיסוי ראש, כפפות, סינר
+7. ניקיון ריצפה ותעלות ניקוז`},
+  vegetables:{name:'חדר ירקות',emoji:'🥬',prompt:`בדוק את חדר הירקות:
+1. ניקיון ירקות — קמלים/מקולקלים
+2. ניקיון ארגזים — מלוכלכים, שבורים
+3. ארגזים ישירות על הרצפה
+4. היגיינה עובדים — כיסוי ראש, כפפות
+5. ניקיון משטחי עבודה
+6. ניקיון ריצפה — שאריות, עפר
+7. הפרדת מוצרים פגומים`},
+  dairy:{name:'חדר מחלבה',emoji:'🥛',prompt:`בדוק את חדר המחלבה:
+1. טמפרטורת אחסון 1-4°C
+2. הפרדה חלב גולמי/מפוסטר/גבינות
+3. ניקיון ציוד — מכלים, מכסים
+4. אטימות כיסויים
+5. היגיינה — כיסוי ראש, כפפות, ביגוד לבן
+6. ניקיון ריצפה ותעלות
+7. תיעוד טמפרטורות גלוי`},
+  packing:{name:'חדר אריזה',emoji:'🗃️',prompt:`בדוק את חדר האריזה:
+1. ניקיון פס הייצור
+2. חומרי אריזה לא על הרצפה
+3. פסולת ליד מוצרים פתוחים
+4. ביגוד עובדים — כיסוי ראש, כפפות
+5. תאריכי תפוגה על תוויות
+6. ניקיון ציוד אריזה
+7. ניקיון ריצפה`},
+  general:{name:'כללי',emoji:'🏭',prompt:`בדוק את חדר העבודה:
+1. היגיינה אישית — ביגוד, כיסוי ראש, כפפות
+2. ניקיון משטחי עבודה
+3. סחורה/ציוד על הרצפה
+4. מזון חשוף/אחסון לא תקין
+5. ניקיון מדפים וריצפה
+6. תנאי אחסון כלליים`}
+};
+
+const QUIZ={
+  kitchen:['מדוע חובה לכסות מזון מבושל ולא להשאירו חשוף?','כמה זמן מותר להשאיר בשר מבושל בטמפרטורת חדר?','כיצד מנקים ומחטאים גריל/תנור אחרי שימוש?','מה הסכנה ממגע בין מזון חי למבושל?','מתי חייבים להחליף כפפות בחדר הבישול?','כיצד בודקים שמשטח עבודה נקי לפני שימוש?','מה הטמפרטורה הפנימית הנדרשת לבישול עוף?','כיצד שומרים על כיסוי ראש תקין בזמן בישול?','מה עושים עם מזון שנפל על הרצפה?','כמה פעמים ביום מנקים את ריצפת המטבח?'],
+  toilets:['מדוע חובה לשטוף ידיים אחרי שירותים ולפני חזרה למטבח?','כמה שניות שוטפים ידיים לפי תקן הבריאות?','מה עושים כשנגמר הסבון בשירותים?','כיצד מפרידים ביגוד עבודה מבגדים אישיים במלתחה?','מה הסכנה מלוקר עם ביגוד מלוכלך?','כמה פעמים ביום מנקים שירותי עובדים?','מה עושים כשיש בעיית ניקוז בשירותים?','כיצד מדווחים על ריח חריג בשירותים?','מה הכללים לגבי אחסון מזון במלתחות?','למה חשוב שיהיה שלט "חובה לשטוף ידיים" גלוי?'],
+  salads:['כמה פעמים שוטפים ירקות לפני עיבוד לסלט?','כיצד מזהים ירק שאינו מתאים לשימוש?','מה טמפרטורת האחסון המותרת לסלטים מוכנים?','כיצד מונעים זיהום צולב בין ירקות שונים?','כמה זמן ניתן לשמור סלט מוכן במקרר?','כיצד מסמנים סלט שהוכן היום?','מה הסכנה מאחסון עגבניות וחסה יחד?','כיצד מנהלים אלרגנים בחדר הסלטים?','מה עושים עם שאריות סלט בסוף יום?','כיצד מנקים מעבד מזון אחרי שימוש?'],
+  pastry:['כיצד מפרידים בין מוצרים עם גלוטן לבלי גלוטן?','מה טמפרטורת האחסון לעוגות עם קרם?','כיצד מנקים מיקסר אחרי שימוש בחלב/ביצים?','מדוע חייבים כיסוי ראש גם בקונדיטוריה?','כמה זמן ניתן לשמור עוגת שמנת בחוץ?','כיצד מסמנים מוצר שמכיל אגוזים?','מה עושים עם בצק שנפל על הרצפה?','כיצד שומרים קמח מפני לחות ומזיקים?','מה הסכנה מחשיפת קרם פטיסייר בחוץ?','כיצד מנקים תבניות אפייה בין שימושים?'],
+  warehouse:['מהו גובה המינימום לאחסון סחורה מהרצפה?','איך מסמנים מוצרים שפג תוקפם?','מה עושים כשמוצר נמצא ללא תווית?','כמה פעמים ביום בודקים טמפרטורת הקירור?','מה הדרך הנכונה לנקות מדפי אחסון?','אריזה שנפתחה בטעות — מה עושים?','מה עיקרון FIFO ולמה חשוב?','כיצד מפרידים בין סוגי מוצרים?','מה עושים כשמוצר נופל על הרצפה?','מה בודקים בתחילת כל משמרת?'],
+  butcher:['כיצד מוודאים הפרדה בין עוף, דגים ובקר?','מה טמפרטורת הבשר הטרי המותרת?','לכמה זמן ניתן להשאיר בשר מחוץ למקרר?','איך מנקים לוחות חיתוך אחרי שימוש?','מה לובשים בחדר קצביה ומדוע?','כיצד מסמנים בשר שנגע בפסולת?','מתי מחליפים כפפות בעבודה עם בשר?','מה הסכנה מעירבוב עוף ובקר?','איך שומרים סכינים בין שימושים?','מה עושים כשמקרר מגיע מעל 4°C?'],
+  vegetables:['כיצד בודקים שירק אינו מקולקל?','מה עושים עם ירק שיש בו נגע?','כיצד שומרים ירקות שנשטפו?','מה ההפרדה בין ירקות שורש לעלים?','כמה פעמים מחליפים מים בשטיפה?','למה ארגזים לא יגעו ישירות ברצפה?','מה לובשים בחדר ירקות?','כיצד מסמנים ירקות שהוחזרו?','מה הסכנה מאחסון ליד חומרי ניקוי?','איך שומרים ירקות טריים לאורך זמן?'],
+  dairy:['מה טמפרטורת האחסון למוצרי חלב?','כיצד מפרידים בין מוצרי חלב שונים?','מה עושים כשמכל חלב ניזוק?','מתי בודקים תאריכי תפוגה?','איך מנקים ציוד שנגע בחלב גולמי?','מה חשוב ללבוש בחדר מחלבה?','כיצד מדווחים על תקלת מקרר?','למה אסור לאחסן חלב ליד מוצרים ריחניים?','מה הסכנה מחלב לא מפוסטר?','כיצד מוודאים שאטימות מכלים תקינה?'],
+  packing:['מה עושים עם מוצר שנפל על פס הייצור?','כיצד מוודאים שתאריך התפוגה נכון?','מה לובשים בחדר אריזה?','כיצד שומרים חומרי אריזה מפני זיהום?','מה עושים כשמכונת האריזה מלוכלכת?','כמה פעמים ביום מנקים את הפס?','מה הסכנה מאריזות שנגעו ברצפה?','כיצד מסמנים מוצר שנארז בלי תווית?','מה הכללים לגבי שתייה ליד הפס?','כיצד מונעים גופים זרים באריזה?'],
+  general:['כמה שניות שוטפים ידיים לפי תקן?','מתי מחליפים כפפות?','כיצד שומרים על ניקיון כיסוי הראש?','מה עושים כשמגלים מזיק בחדר?','מה הסימנים לזיהום מוצר מזון?','כמה פעמים בשבוע מנקים ריצפה?','מה עושים עם עובד שמגיע עם מחלה?','איך שומרים חומרי ניקוי בנפרד ממזון?','מה בודקים לפני תחילת משמרת?','כיצד מדווחים על ממצא חריג?']
+};
+
+// ── BUILD ROOM GRID ──
+const roomOrder=['kitchen','toilets','salads','pastry','warehouse','butcher','vegetables','dairy','packing','general'];
+const grid=document.getElementById('roomGrid');
+roomOrder.forEach(key=>{
+  const r=ROOMS[key];
+  const d=document.createElement('div');
+  d.className='room-btn';
+  d.innerHTML=`<span class="room-emoji">${r.emoji}</span><div class="room-name">${r.name}</div>`;
+  d.onclick=()=>pickRoom(key,r.name,r.emoji);
+  grid.appendChild(d);
+});
+
+// ── WA SETUP ──
+function updateWABanner(){
+  if(waNumber){
+    document.getElementById('waBannerText').textContent='✅ WhatsApp: +'+waNumber;
+    document.getElementById('waBannerSub').textContent='לחץ "הגדר" לשינוי המספר';
+  }
+}
+updateWABanner();
+function openModal(){document.getElementById('modalBg').classList.add('open');document.getElementById('waInput').value=waNumber;}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function saveWA(){
+  const v=document.getElementById('waInput').value.replace(/\D/g,'');
+  if(!v){showToast('⚠️ הכנס מספר תקין');return;}
+  waNumber=v;localStorage.setItem('wa_number',v);updateWABanner();closeModal();showToast('✅ מספר נשמר!');
+}
+document.getElementById('modalBg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function showToast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── ROOM PICK → CAMERA ──
+function pickRoom(key,name,emoji){
+  if(!apiKey){showToast('⚠️ הכנס מפתח API תחילה',3000);document.getElementById('apiKeyInput').focus();return;}
+  room=key;roomName=ROOMS[key].name;roomEmoji=emoji;
+  document.getElementById('roomSection').style.display='none';
+  document.getElementById('selectedBar').style.display='flex';
+  document.getElementById('selectedLabel').textContent=emoji+' '+name;
+  document.getElementById('quizSection').style.display='block';
+  document.getElementById('roomLoader').textContent=name;
+  imageBase64=null;
+  document.getElementById('prevWrap').style.display='none';
+  document.getElementById('btnAnalyze').style.display='none';
+  document.getElementById('results').style.display='none';
+  document.getElementById('errBox').style.display='none';
+  openCamera();
+}
+
+function openCamera(){document.getElementById('fileInput').value='';document.getElementById('fileInput').click();}
+
+function changeRoom(){
+  document.getElementById('roomSection').style.display='block';
+  document.getElementById('selectedBar').style.display='none';
+  document.getElementById('quizSection').style.display='none';
+  document.getElementById('prevWrap').style.display='none';
+  document.getElementById('btnAnalyze').style.display='none';
+  document.getElementById('results').style.display='none';
+  imageBase64=null;room=null;
+}
+
+// ── FILE ──
+document.getElementById('fileInput').addEventListener('change',function(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    imageBase64=ev.target.result.split(',')[1];
+    document.getElementById('prevImg').src=ev.target.result;
+    document.getElementById('imgLabel').textContent=roomEmoji+' '+roomName;
+    document.getElementById('prevWrap').style.display='block';
+    document.getElementById('btnAnalyze').style.display='block';
+    document.getElementById('results').style.display='none';
+    document.getElementById('errBox').style.display='none';
+  };
+  r.readAsDataURL(f);
+});
+
+// ── QUIZ ──
+function generateQuiz(){
+  if(!room)return;
+  const q=QUIZ[room].sort(()=>Math.random()-.5).slice(0,3);
+  document.getElementById('quizBody').innerHTML=q.map((t,i)=>`
+    <div class="q-item" style="animation-delay:${i*.08}s">
+      <div class="q-num">שאלה ${i+1}</div>
+      <div class="q-text">${t}</div>
+    </div>`).join('')+'<div class="quiz-note">💡 לבדיקת מודעות הגיינה של עובדים</div>';
+}
+
+// ── ANALYZE ──
+async function analyzeImage(){
+  if(!imageBase64||!room)return;
+  if(!apiKey){showToast('⚠️ הכנס מפתח API תחילה',3000);return;}
+  document.getElementById('btnAnalyze').disabled=true;
+  document.getElementById('loader').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('errBox').style.display='none';
+  const sys=`אתה מפקח תברואה מוסמך בישראל, מומחה ל-HACCP ו-ISO 22000.
+בדוק: ${ROOMS[room].name}
+${ROOMS[room].prompt}
+החזר JSON בלבד ללא טקסט נוסף:
+{"findings":[{"id":1,"severity":"critical|warning|ok","category":"קטגוריה","title":"כותרת","description":"תיאור","action":"פעולה"}]}
+critical=הפרה ברורה, warning=בעיה, ok=תקין. 4-7 ממצאים.`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
+      body:JSON.stringify({model:"claude-opus-4-5",max_tokens:1000,system:sys,
+        messages:[{role:"user",content:[
+          {type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}},
+          {type:"text",text:`ביקורת תברואה מקצועית של ${roomName}.`}
+        ]}]})
+    });
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error.message);}
+    const txt=data.content.map(b=>b.text||'').join('');
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    lastFindings=parsed.findings;
+    renderResults(parsed.findings);
+  }catch(e){
+    document.getElementById('errBox').textContent='שגיאה: '+e.message;
+    document.getElementById('errBox').style.display='block';
+  }finally{
+    document.getElementById('loader').style.display='none';
+    document.getElementById('btnAnalyze').disabled=false;
+  }
+}
+
+// ── RENDER ──
+function renderResults(findings){
+  const crit=findings.filter(f=>f.severity==='critical').length;
+  const warn=findings.filter(f=>f.severity==='warning').length;
+  const ok=findings.filter(f=>f.severity==='ok').length;
+  document.getElementById('sumBar').innerHTML=`
+    <div class="sum-item"><div class="sum-num nc">${crit}</div><div class="sum-lbl">קריטי</div></div>
+    <div class="sum-div"></div>
+    <div class="sum-item"><div class="sum-num nw">${warn}</div><div class="sum-lbl">אזהרה</div></div>
+    <div class="sum-div"></div>
+    <div class="sum-item"><div class="sum-num nok">${ok}</div><div class="sum-lbl">תקין</div></div>`;
+  let bc='green',bt='✅ עמידה בתקן';
+  if(crit>0){bc='red';bt='🚨 נדרש טיפול מיידי';}
+  else if(warn>0){bc='yellow';bt='⚠️ נדרשות שיפורים';}
+  document.getElementById('overallBadge').innerHTML=`<span class="badge badge-${bc}">${bt}</span>`;
+  const sorted=[...findings].sort((a,b)=>({critical:0,warning:1,ok:2}[a.severity]-{critical:0,warning:1,ok:2}[b.severity]));
+  const sHe={critical:'קריטי',warning:'אזהרה',ok:'תקין'};
+  const sIco={critical:'🔴',warning:'🟡',ok:'🟢'};
+  document.getElementById('findingsList').innerHTML=sorted.map((f,i)=>`
+    <div class="finding ${f.severity}" style="animation-delay:${i*.06}s">
+      <div class="f-ico">${sIco[f.severity]}</div>
+      <div class="f-body">
+        <div class="f-top"><span class="f-cat">${f.category}</span><span class="sev-tag">${sHe[f.severity]}</span></div>
+        <div class="f-title">${f.title}</div>
+        <div class="f-desc">${f.description}</div>
+        ${f.severity!=='ok'?`<div class="f-action">▶ ${f.action}</div>`:''}
+      </div></div>`).join('');
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+
+// ── BUILD PDF ──
+function buildPDF(){
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+  const sHe={critical:'קריטי',warning:'אזהרה',ok:'תקין'};
+  const sColor={critical:'#ff4757',warning:'#e6a800',ok:'#2ed573'};
+  const sBg={critical:'#fff0f1',warning:'#fffbe6',ok:'#f0fff6'};
+  const crit=lastFindings.filter(f=>f.severity==='critical').length;
+  const warn=lastFindings.filter(f=>f.severity==='warning').length;
+  const ok=lastFindings.filter(f=>f.severity==='ok').length;
+  let overall='עמידה טובה בתקן ✓',oColor='#2ed573';
+  if(crit>0){overall='נדרש טיפול מיידי ✗';oColor='#ff4757';}
+  else if(warn>0){overall='נדרשות שיפורים ⚠';oColor='#e6a800';}
+  const sorted=[...lastFindings].sort((a,b)=>({critical:0,warning:1,ok:2}[a.severity]-{critical:0,warning:1,ok:2}[b.severity]));
+  const rows=sorted.map((f,i)=>`<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+    <td style="padding:9px 11px;border-bottom:1px solid #eee;font-weight:700;">${f.category}</td>
+    <td style="padding:9px 11px;border-bottom:1px solid #eee;">${f.title}</td>
+    <td style="padding:9px 11px;border-bottom:1px solid #eee;font-size:12px;color:#555;">${f.description}</td>
+    <td style="padding:9px 11px;border-bottom:1px solid #eee;text-align:center;"><span style="background:${sBg[f.severity]};color:${sColor[f.severity]};padding:3px 9px;border-radius:10px;font-weight:700;font-size:12px;">${sHe[f.severity]}</span></td>
+    <td style="padding:9px 11px;border-bottom:1px solid #eee;font-size:12px;color:#0062ff;">${f.severity!=='ok'?f.action:'—'}</td>
+  </tr>`).join('');
+  return {dateStr,timeStr,crit,warn,ok,overall,oColor,html:`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8">
+<style>body{font-family:Arial,sans-serif;margin:0;padding:30px 38px;color:#222;}
+.lb{display:flex;align-items:center;gap:13px;border-bottom:3px solid #0062ff;padding-bottom:13px;margin-bottom:18px;}
+.li{width:46px;height:46px;background:linear-gradient(135deg,#0062ff,#00d4ff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+h1{font-size:19px;font-weight:900;color:#0b1120;margin:0;}
+.sub{font-size:11px;color:#666;margin:2px 0 0;}
+.meta{display:flex;gap:22px;background:#f5f8ff;border:1px solid #d0e0ff;border-radius:9px;padding:10px 16px;margin-bottom:16px;flex-wrap:wrap;}
+.mi label{font-size:10px;color:#666;display:block;font-weight:600;text-transform:uppercase;}
+.mi span{font-size:13px;font-weight:700;}
+.ovr{border-radius:9px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.sum{display:flex;gap:14px;margin-bottom:16px;}
+.sc{flex:1;text-align:center;border-radius:9px;padding:11px;border:1.5px solid;}
+.sn{font-size:26px;font-weight:900;line-height:1;}
+.sl{font-size:11px;margin-top:2px;font-weight:600;}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;}
+thead tr{background:#0b1120;color:#fff;}
+th{padding:9px 11px;text-align:right;font-size:11px;}
+.ftr{border-top:2px solid #eee;padding-top:11px;display:flex;justify-content:space-between;font-size:10px;color:#999;}
+.sig{border:1px solid #ccc;border-radius:7px;padding:9px 14px;display:inline-block;margin-top:10px;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+</head><body>
+<div class="lb"><div class="li">🔍</div><div><h1>דוח ביקורת תברואה רשמי</h1><p class="sub">מערכת מפקח תברואה חכם | תקני משרד הבריאות הישראלי ו-HACCP</p></div></div>
+<div class="meta">
+  <div class="mi"><label>חדר עבודה</label><span>${roomEmoji} ${roomName}</span></div>
+  <div class="mi"><label>תאריך</label><span>${dateStr}</span></div>
+  <div class="mi"><label>שעה</label><span>${timeStr}</span></div>
+  <div class="mi"><label>ממצאים</label><span>${lastFindings.length}</span></div>
+</div>
+<div class="ovr" style="background:${crit>0?'#fff0f1':warn>0?'#fffbe6':'#f0fff6'};border:2px solid ${oColor}40;">
+  <span style="font-size:14px;font-weight:900;">סיכום ביקורת</span>
+  <span style="font-size:14px;font-weight:900;color:${oColor};">${overall}</span>
+</div>
+<div class="sum">
+  <div class="sc" style="background:#fff0f1;border-color:#ff475730;"><div class="sn" style="color:#ff4757;">${crit}</div><div class="sl" style="color:#ff4757;">קריטי</div></div>
+  <div class="sc" style="background:#fffbe6;border-color:#ffd32a50;"><div class="sn" style="color:#e6a800;">${warn}</div><div class="sl" style="color:#e6a800;">אזהרה</div></div>
+  <div class="sc" style="background:#f0fff6;border-color:#2ed57330;"><div class="sn" style="color:#2ed573;">${ok}</div><div class="sl" style="color:#2ed573;">תקין</div></div>
+</div>
+<table><thead><tr><th>קטגוריה</th><th>ממצא</th><th>תיאור</th><th style="text-align:center;">חומרה</th><th>פעולה נדרשת</th></tr></thead><tbody>${rows}</tbody></table>
+<div><div style="font-weight:700;font-size:13px;margin-bottom:7px;">חתימות:</div>
+<div style="display:flex;gap:30px;">
+  <div class="sig"><div style="font-size:10px;color:#666;margin-bottom:20px;">מפקח תברואה</div><div style="font-size:10px;color:#666;">שם ותאריך</div></div>
+  <div class="sig"><div style="font-size:10px;color:#666;margin-bottom:20px;">מנהל אחראי</div><div style="font-size:10px;color:#666;">שם ותאריך</div></div>
+</div></div>
+<div class="ftr"><span>הופק ע"י מערכת מפקח תברואה חכם</span><span>${dateStr} ${timeStr}</span></div>
+</body></html>`};
+}
+
+function exportPDF(){
+  if(!lastFindings.length)return;
+  const {html}=buildPDF();
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  setTimeout(()=>w.print(),600);
+  showToast('📄 PDF נפתח להדפסה/שמירה');
+}
+
+function sendWhatsApp(){
+  if(!lastFindings.length)return;
+  if(!waNumber){openModal();showToast('⚠️ הגדר מספר WhatsApp תחילה',3000);return;}
+  const {dateStr,timeStr,crit,warn,ok,overall,html}=buildPDF();
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  setTimeout(()=>w.print(),500);
+  const critLines=lastFindings.filter(f=>f.severity==='critical').map(f=>`🔴 ${f.title}`).join('\n');
+  const warnLines=lastFindings.filter(f=>f.severity==='warning').map(f=>`🟡 ${f.title}`).join('\n');
+  let msg=`📋 *דוח ביקורת תברואה*\n${roomEmoji} *${roomName}*\n📅 ${dateStr} | ${timeStr}\n\n`;
+  msg+=`*סיכום:* ${overall}\n🔴 ${crit} קריטי | 🟡 ${warn} אזהרה | 🟢 ${ok} תקין\n`;
+  if(critLines) msg+=`\n*קריטי:*\n${critLines}\n`;
+  if(warnLines) msg+=`\n*אזהרות:*\n${warnLines}\n`;
+  msg+=`\n_הדוח המלא צורף כ-PDF_`;
+  setTimeout(()=>{window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`,'_blank');showToast('✅ PDF נשמר + WhatsApp נפתח!',3500);},1200);
+}
+
+function resetAll(){
+  changeRoom();lastFindings=[];
+  document.getElementById('quizBody').innerHTML='<p style="font-size:13px;color:var(--muted);text-align:center;">לחץ לקבלת שאלות</p>';
+}
+</script>
+</body>
+</html>
